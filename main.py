@@ -13,10 +13,11 @@ load_dotenv()
 # Environment variables
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 MONGO_URI = os.getenv("MONGO_URI")
-USE_PINECONE = os.getenv("USE_PINECONE", "false").lower() == "true"
-PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-PINECONE_ENV = os.getenv("PINECONE_ENV")
-PINECONE_INDEX = os.getenv("PINECONE_INDEX", "documents")
+
+USE_PINECONE = os.getenv("USE_PINECONE", "false").strip().lower() == "true"
+PINECONE_API_KEY = os.getenv("PINECONE_API_KEY") if USE_PINECONE else None
+PINECONE_ENV = os.getenv("PINECONE_ENV") if USE_PINECONE else None
+PINECONE_INDEX = os.getenv("PINECONE_INDEX", "documents") if USE_PINECONE else None
 
 # FastAPI setup
 app = FastAPI(title="Document Ingestion API")
@@ -37,7 +38,7 @@ chunks_collection = mongo_db["chunks"]
 # LangChain Embeddings
 embeddings_model = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
 
-# Optional Pinecone setup
+# Pinecone setup
 if USE_PINECONE:
     pinecone.init(api_key=PINECONE_API_KEY, environment=PINECONE_ENV)
     if PINECONE_INDEX not in pinecone.list_indexes():
@@ -95,7 +96,7 @@ async def upload_document(file: UploadFile, chunk_strategy: str = Form("recursiv
             for chunk, vector in zip(chunks, embedding_vectors)
         ])
 
-        # Optional Pinecone upload
+        # Pinecone upload
         if USE_PINECONE:
             pinecone_index.upsert([
                 (str(uuid.uuid4()), vector) for vector in embedding_vectors
