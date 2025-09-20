@@ -1,6 +1,11 @@
+fastapi
+uvicorn
+pymongo
+python-dotenv
+PyPDF2
 langchain
 langchain-community
-langchain_text_splitter
-langchain_openai
+langchain-text-splitters
+langchain-openai
 pinecone
-python_dotenv
+python-multipart
