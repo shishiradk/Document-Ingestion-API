@@ -21,7 +21,7 @@ PINECONE_INDEX = os.getenv("PINECONE_INDEX", "documents") if USE_PINECONE else N
 
 # FastAPI setup
 app = FastAPI(title="Document Ingestion API")
-app.add_middleware(
+app.add_middleware( 
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
