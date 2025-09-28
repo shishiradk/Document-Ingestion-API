@@ -50,11 +50,6 @@ Document Ingestion API is a full-stack solution for uploading, chunking, embeddi
 uvicorn main:app --reload
 ```
 
-### Running the Frontend (Streamlit)
-```sh
-streamlit run app.py
-```
-
 ## API Usage
 
 ### Upload Document
