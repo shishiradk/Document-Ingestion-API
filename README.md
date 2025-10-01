@@ -1,11 +1,8 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
-  <img src="https://img.shields.io/badge/Python-3.10%2B-blue.svg" alt="Python Version">
-</p>
+
 
 # Document Ingestion API
 
-> A full-stack solution for uploading, chunking, embedding, and storing documents (PDF/TXT) using FastAPI, MongoDB, and optional Pinecone vector storage. Supports chunking strategies and OpenAI embeddings for downstream retrieval and search tasks.
+> A full-stack solution for uploading, chunking, embedding, and storing documents (PDF/TXT) using FastAPI, MongoDB, and Pinecone vector storage. Supports chunking strategies and OpenAI embeddings for downstream retrieval and search tasks.
 
 ---
 
