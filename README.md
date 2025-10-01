@@ -12,7 +12,6 @@ Document Ingestion API is a full-stack solution for uploading, chunking, embeddi
 
 ## Architecture
 - **Backend:** FastAPI (see `main.py`)
-- **Frontend:** Streamlit (see `app.py`)
 - **Database:** MongoDB
 - **Vector DB:** Pinecone
 
@@ -48,11 +47,6 @@ Document Ingestion API is a full-stack solution for uploading, chunking, embeddi
 ### Running the Backend (FastAPI)
 ```sh
 uvicorn main:app --reload
-```
-
-### Running the Frontend (Streamlit)
-```sh
-streamlit run app.py
 ```
 
 ## API Usage
