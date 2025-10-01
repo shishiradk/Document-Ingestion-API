@@ -24,7 +24,6 @@ if not OPENAI_API_KEY:
 MONGO_URI = os.getenv("MONGO_URI")
 USE_PINECONE = os.getenv("USE_PINECONE", "false").strip().lower() == "true"
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY") if USE_PINECONE else None
-PINECONE_ENV = os.getenv("PINECONE_ENV") if USE_PINECONE else None
 PINECONE_INDEX = os.getenv("PINECONE_INDEX", "documents") if USE_PINECONE else None
 
 # Chunking strategy enum
@@ -60,7 +59,7 @@ if USE_PINECONE:
             pc.create_index(
                 name=PINECONE_INDEX,
                 dimension=1536,
-                spec=ServerlessSpec(cloud="aws", region=PINECONE_ENV or "us-east-1")
+                spec=ServerlessSpec(cloud="aws", region="us-east-1")
             )
         pinecone_index = pc.Index(PINECONE_INDEX)
     except Exception as e:
