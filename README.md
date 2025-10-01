@@ -6,6 +6,7 @@
 
 ---
 
+
 ## Features
 
 - **Upload PDF/TXT files** via a web UI or REST API
@@ -13,6 +14,10 @@
 - **Generate embeddings** with OpenAI
 - **Store documents and chunks** in MongoDB
 - **Optional Pinecone integration** for vector search
+- **List all uploaded documents**
+- **Retrieve all chunks for a document**
+- **Delete documents and their chunks (MongoDB & Pinecone)**
+- **Robust error handling and validation**
 - **REST API** for programmatic access
 
 ## Architecture
@@ -63,6 +68,7 @@ uvicorn main:app --reload
 
 ---
 
+
 ## API Usage
 
 ### Upload Document
@@ -75,14 +81,53 @@ uvicorn main:app --reload
 - **Response:**
 	- `doc_id`: Document ID in MongoDB
 	- `num_chunks`: Number of chunks created
-	- `pinecone`: Whether Pinecone was used
+	- `vector_db_uploaded`: Whether Pinecone was used
+	- `vector_db`: Which vector DB was used
 
-#### Example (using `curl`):
-
+**Example:**
 ```sh
 curl -X POST "http://localhost:8000/upload/" \
 	-F "file=@path/to/your/file.pdf" \
 	-F "chunk_strategy=recursive"
+```
+
+---
+
+### List Documents
+
+**GET** `/documents/`
+
+Returns a list of all uploaded documents with metadata.
+
+**Example:**
+```sh
+curl http://localhost:8000/documents/
+```
+
+---
+
+### Get Document Chunks
+
+**GET** `/documents/{doc_id}/chunks`
+
+Returns all chunks for a specific document.
+
+**Example:**
+```sh
+curl http://localhost:8000/documents/<doc_id>/chunks
+```
+
+---
+
+### Delete Document
+
+**DELETE** `/documents/{doc_id}`
+
+Deletes a document and its chunks from MongoDB and Pinecone (if enabled).
+
+**Example:**
+```sh
+curl -X DELETE http://localhost:8000/documents/<doc_id>
 ```
 
 ---
