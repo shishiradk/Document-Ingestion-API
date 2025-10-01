@@ -1,7 +1,4 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
-  <img src="https://img.shields.io/badge/Python-3.10%2B-blue.svg" alt="Python Version">
-</p>
+
 
 # Document Ingestion API
 
