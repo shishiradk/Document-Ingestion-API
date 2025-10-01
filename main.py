@@ -4,12 +4,14 @@ from PyPDF2 import PdfReader
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from pymongo import MongoClient
+from bson import ObjectId
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from pinecone import Pinecone, ServerlessSpec
 from enum import Enum
 from typing import Optional
 import os, uuid
+from datetime import datetime
 
 # Load .env
 load_dotenv()
@@ -145,13 +147,13 @@ async def upload_document(
         # Extract text
         text = extract_text(file)
         
-        # Save full document in MongoDB
+        # Save full document in MongoDB with timestamp
         doc_id = documents_collection.insert_one({
             "filename": file.filename,
             "content": text,
             "chunk_strategy": chunk_strategy.value,
             "file_size": len(text),
-            "timestamp": None  # You can add datetime.utcnow() if needed
+            "timestamp": datetime.utcnow()
         }).inserted_id
 
         # Chunk text
@@ -233,6 +235,7 @@ async def list_documents():
             "filename": 1, 
             "chunk_strategy": 1, 
             "file_size": 1,
+            "timestamp": 1,
             "_id": 1
         }).limit(100))
         
@@ -243,7 +246,8 @@ async def list_documents():
                     "doc_id": str(doc["_id"]),
                     "filename": doc.get("filename"),
                     "chunk_strategy": doc.get("chunk_strategy"),
-                    "file_size": doc.get("file_size")
+                    "file_size": doc.get("file_size"),
+                    "timestamp": doc.get("timestamp").isoformat() if doc.get("timestamp") else None
                 }
                 for doc in docs
             ]
@@ -272,3 +276,51 @@ async def get_document_chunks(doc_id: str):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching chunks: {str(e)}")
+
+@app.delete("/documents/{doc_id}")
+async def delete_document(doc_id: str):
+    """Delete a document and its chunks from MongoDB and Pinecone"""
+    try:
+        # Validate ObjectId format
+        try:
+            obj_id = ObjectId(doc_id)
+        except:
+            raise HTTPException(status_code=400, detail="Invalid document ID format")
+        
+        # Check if document exists
+        doc = documents_collection.find_one({"_id": obj_id})
+        if not doc:
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        # Get all chunks before deleting (needed for Pinecone IDs)
+        chunks = list(chunks_collection.find({"doc_id": doc_id}))
+        
+        # Delete from Pinecone first (if enabled)
+        pinecone_deleted = False
+        if USE_PINECONE and pinecone_index and chunks:
+            try:
+                ids_to_delete = [f"{doc_id}_{chunk['chunk_index']}" for chunk in chunks]
+                if ids_to_delete:
+                    pinecone_index.delete(ids=ids_to_delete)
+                    pinecone_deleted = True
+            except Exception as e:
+                print(f"Pinecone deletion failed: {e}")
+                # Continue with MongoDB deletion even if Pinecone fails
+        
+        # Delete from MongoDB
+        documents_collection.delete_one({"_id": obj_id})
+        chunks_deleted = chunks_collection.delete_many({"doc_id": doc_id}).deleted_count
+        
+        return {
+            "status": "deleted",
+            "doc_id": doc_id,
+            "filename": doc.get("filename"),
+            "chunks_deleted": chunks_deleted,
+            "pinecone_deleted": pinecone_deleted
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting document: {str(e)}")
+
